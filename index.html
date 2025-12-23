@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inserc</title>
+</head>
+<body>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .arc-reactor {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .core {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #00d9ff 0%, #0066ff 50%, #003d99 100%);
+            border-radius: 50%;
+            box-shadow: 
+                0 0 40px #00d9ff,
+                0 0 80px #0066ff,
+                0 0 120px #003d99,
+                inset 0 0 20px #00d9ff;
+            animation: pulse 2s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        .ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 3px solid #00d9ff;
+            box-shadow: 
+                0 0 20px #00d9ff,
+                inset 0 0 20px #0066ff;
+        }
+
+        .ring-1 {
+            width: 140px;
+            height: 140px;
+            animation: rotate 4s linear infinite;
+        }
+
+        .ring-2 {
+            width: 200px;
+            height: 200px;
+            animation: rotate 6s linear infinite reverse;
+        }
+
+        .ring-3 {
+            width: 260px;
+            height: 260px;
+            animation: rotate 8s linear infinite;
+        }
+
+        .blade {
+            position: absolute;
+            width: 4px;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent 0%, #00d9ff 50%, transparent 100%);
+            box-shadow: 0 0 10px #00d9ff;
+            transform-origin: center;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00d9ff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00d9ff;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .outer-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 217, 255, 0.3);
+        }
+
+        .segment {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-origin: center;
+        }
+
+        .segment::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #00d9ff;
+            border-radius: 50%;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 15px #00d9ff;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #00d9ff 0%, #0066ff 100%);
+            border: 2px solid #00d9ff;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.8);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .customization-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 10, 10, 0.9);
+            border: 2px solid #00d9ff;
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 250px;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .customization-panel h3 {
+            color: #00d9ff;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 16px;
+            text-shadow: 0 0 10px #00d9ff;
+        }
+
+        .control-group {
+            margin: 15px 0;
+        }
+
+        .control-group label {
+            display: block;
+            color: #00d9ff;
+            font-size: 12px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-group input[type="color"],
+        .control-group input[type="range"],
+        .control-group select {
+            width: 100%;
+            padding: 5px;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid #00d9ff;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .control-group input[type="color"] {
+            height: 40px;
+        }
+
+        .control-group input[type="range"] {
+            height: 8px;
+        }
+
+        .control-group select {
+            padding: 8px;
+        }
+
+        .color-presets {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #00d9ff;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .preset-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .preset-btn.active {
+            border-width: 3px;
+            box-shadow: 0 0 15px;
+        }
+
+        .power-off {
+            opacity: 0.3;
+        }
+
+        .power-off .core,
+        .power-off .ring,
+        .power-off .blade,
+        .power-off .segment::before {
+            animation-play-state: paused;
+            opacity: 0.2;
+        }
+
+        .info {
+            color: #00d9ff;
+            font-size: 18px;
+            text-align: center;
+            text-shadow: 0 0 10px #00d9ff;
+            letter-spacing: 2px;
+        }
+
+        .stats-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid #00d9ff;
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 200px;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        }
+
+        .stat {
+            margin: 10px 0;
+            color: #00d9ff;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 217, 255, 0.2);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d9ff, #0066ff);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px #00d9ff;
+        }
+
+        .energy-bolt {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(to bottom, #00d9ff, transparent);
+            box-shadow: 0 0 8px #00d9ff;
+            animation: bolt 0.5s ease-out forwards;
+        }
+
+        @keyframes bolt {
+            from {
+                height: 0;
+                opacity: 1;
+            }
+            to {
+                height: 100px;
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 
+                    0 0 40px #00d9ff,
+                    0 0 80px #0066ff,
+                    0 0 120px #003d99,
+                    inset 0 0 20px #00d9ff;
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 
+                    0 0 60px #00d9ff,
+                    0 0 100px #0066ff,
+                    0 0 140px #003d99,
+                    inset 0 0 30px #00d9ff;
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-150px) scale(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="customization-panel">
+        <h3>⚙️ Personalización</h3>
+        
+        <div class="control-group">
+            <label>Color Principal</label>
+            <input type="color" id="colorPicker" value="#00d9ff">
+        </div>
+
+        <div class="control-group">
+            <label>Presets de Color</label>
+            <div class="color-presets">
+                <div class="preset-btn active" style="background: #00d9ff" onclick="changePreset('#00d9ff', '#0066ff', 'Clásico')"></div>
+                <div class="preset-btn" style="background: #ff0000" onclick="changePreset('#ff0000', '#990000', 'Rojo')"></div>
+                <div class="preset-btn" style="background: #00ff00" onclick="changePreset('#00ff00', '#009900', 'Verde')"></div>
+                <div class="preset-btn" style="background: #ffaa00" onclick="changePreset('#ffaa00', '#ff6600', 'Naranja')"></div>
+                <div class="preset-btn" style="background: #ff00ff" onclick="changePreset('#ff00ff', '#990099', 'Púrpura')"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Velocidad de Rotación: <span id="speedValue">1x</span></label>
+            <input type="range" id="speedSlider" min="0.5" max="3" step="0.1" value="1">
+        </div>
+
+        <div class="control-group">
+            <label>Intensidad de Brillo: <span id="glowValue">100%</span></label>
+            <input type="range" id="glowSlider" min="50" max="200" step="10" value="100">
+        </div>
+
+        <div class="control-group">
+            <label>Tamaño: <span id="sizeValue">100%</span></label>
+            <input type="range" id="sizeSlider" min="70" max="150" step="10" value="100">
+        </div>
+
+        <div class="control-group">
+            <label>Efecto de Partículas</label>
+            <select id="particleEffect">
+                <option value="normal">Normal</option>
+                <option value="intense">Intenso</option>
+                <option value="minimal">Mínimo</option>
+                <option value="none">Sin Partículas</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Modo de Animación</label>
+            <select id="animationMode">
+                <option value="smooth">Suave</option>
+                <option value="pulse">Pulsante</option>
+                <option value="chaos">Caótico</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="stats-panel">
+        <div class="stat">
+            <span class="stat-label">Energía:</span>
+            <span class="stat-value" id="energy">100%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="energyBar" style="width: 100%"></div>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Temperatura:</span>
+            <span class="stat-value" id="temp">25°C</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="tempBar" style="width: 25%"></div>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Salida:</span>
+            <span class="stat-value" id="output">3 GJ/s</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Estado:</span>
+            <span class="stat-value" id="status">ÓPTIMO</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="arc-reactor" id="reactor">
+            <div class="core"></div>
+            <div class="ring ring-1"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-3"></div>
+            <div class="outer-ring" id="outerRing"></div>
+        </div>
+        <div class="info" id="info">REACTOR ARC - ACTIVO</div>
+        <div class="controls">
+            <button onclick="togglePower()">ENCENDER/APAGAR</button>
+            <button onclick="boost()">SOBRECARGA</button>
+            <button onclick="saveConfig()">💾 GUARDAR</button>
+            <button onclick="resetConfig()">🔄 RESET</button>
+        </div>
+    </div>
+
+    <script>
+        const reactor = document.getElementById('reactor');
+        const info = document.getElementById('info');
+        const outerRing = document.getElementById('outerRing');
+        const energyEl = document.getElementById('energy');
+        const energyBar = document.getElementById('energyBar');
+        const tempEl = document.getElementById('temp');
+        const tempBar = document.getElementById('tempBar');
+        const outputEl = document.getElementById('output');
+        const statusEl = document.getElementById('status');
+        
+        let isPowered = true;
+        let isBoosting = false;
+        let energy = 100;
+        let temperature = 25;
+        let output = 3;
+        let currentColor = '#00d9ff';
+        let secondaryColor = '#0066ff';
+        let rotationSpeed = 1;
+        let glowIntensity = 1;
+        let reactorSize = 1;
+        let particleMode = 'normal';
+        let animationMode = 'smooth';
+        let particleInterval;
+
+        // Cargar configuración guardada
+        loadConfig();
+
+        // Crear aspas del reactor
+        for (let i = 0; i < 8; i++) {
+            const blade = document.createElement('div');
+            blade.className = 'blade';
+            blade.style.transform = `rotate(${i * 45}deg)`;
+            reactor.appendChild(blade);
+        }
+
+        // Crear segmentos del anillo exterior
+        for (let i = 0; i < 12; i++) {
+            const segment = document.createElement('div');
+            segment.className = 'segment';
+            segment.style.transform = `rotate(${i * 30}deg)`;
+            outerRing.appendChild(segment);
+        }
+
+        // Controles de personalización
+        const colorPicker = document.getElementById('colorPicker');
+        const speedSlider = document.getElementById('speedSlider');
+        const glowSlider = document.getElementById('glowSlider');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const particleEffect = document.getElementById('particleEffect');
+        const animationModeSelect = document.getElementById('animationMode');
+
+        colorPicker.addEventListener('input', (e) => {
+            currentColor = e.target.value;
+            updateReactorColors();
+        });
+
+        speedSlider.addEventListener('input', (e) => {
+            rotationSpeed = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = rotationSpeed.toFixed(1) + 'x';
+            updateRotationSpeed();
+        });
+
+        glowSlider.addEventListener('input', (e) => {
+            glowIntensity = parseInt(e.target.value) / 100;
+            document.getElementById('glowValue').textContent = e.target.value + '%';
+            updateGlowIntensity();
+        });
+
+        sizeSlider.addEventListener('input', (e) => {
+            reactorSize = parseInt(e.target.value) / 100;
+            document.getElementById('sizeValue').textContent = e.target.value + '%';
+            reactor.style.transform = `scale(${reactorSize})`;
+        });
+
+        particleEffect.addEventListener('change', (e) => {
+            particleMode = e.target.value;
+            setupParticles();
+        });
+
+        animationModeSelect.addEventListener('change', (e) => {
+            animationMode = e.target.value;
+            updateAnimationMode();
+        });
+
+        function changePreset(primary, secondary, name) {
+            currentColor = primary;
+            secondaryColor = secondary;
+            colorPicker.value = primary;
+            updateReactorColors();
+            
+            // Actualizar botón activo
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            info.textContent = `TEMA: ${name.toUpperCase()}`;
+            setTimeout(() => {
+                if (isPowered) info.textContent = 'REACTOR ARC - ACTIVO';
+            }, 1500);
+        }
+
+        function updateReactorColors() {
+            document.documentElement.style.setProperty('--main-color', currentColor);
+            const style = document.createElement('style');
+            style.textContent = `
+                .core, .ring, .blade, .particle, button, 
+                .segment::before, .energy-bolt, .info,
+                .stat, .customization-panel, .stats-panel,
+                .progress-fill {
+                    --glow-color: ${currentColor};
+                }
+                .core {
+                    background: radial-gradient(circle, ${currentColor} 0%, ${secondaryColor} 50%, ${adjustBrightness(secondaryColor, -30)} 100%);
+                    box-shadow: 0 0 40px ${currentColor}, 0 0 80px ${secondaryColor}, 0 0 120px ${adjustBrightness(secondaryColor, -30)}, inset 0 0 20px ${currentColor};
+                }
+                .ring, button, .customization-panel, .stats-panel {
+                    border-color: ${currentColor};
+                    box-shadow: 0 0 20px ${currentColor};
+                }
+                .blade, .particle, .segment::before, .energy-bolt {
+                    background: ${currentColor};
+                    box-shadow: 0 0 10px ${currentColor};
+                }
+                button {
+                    background: linear-gradient(135deg, ${currentColor} 0%, ${secondaryColor} 100%);
+                }
+                .progress-fill {
+                    background: linear-gradient(90deg, ${currentColor}, ${secondaryColor});
+                    box-shadow: 0 0 10px ${currentColor};
+                }
+                .info, .stat, .stat-value {
+                    color: ${currentColor};
+                    text-shadow: 0 0 10px ${currentColor};
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function adjustBrightness(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255))
+                .toString(16).slice(1);
+        }
+
+        function updateRotationSpeed() {
+            const rings = document.querySelectorAll('.ring');
+            rings[0].style.animationDuration = (4 / rotationSpeed) + 's';
+            rings[1].style.animationDuration = (6 / rotationSpeed) + 's';
+            rings[2].style.animationDuration = (8 / rotationSpeed) + 's';
+        }
+
+        function updateGlowIntensity() {
+            reactor.style.filter = `brightness(${glowIntensity})`;
+        }
+
+        function updateAnimationMode() {
+            const core = document.querySelector('.core');
+            if (animationMode === 'pulse') {
+                core.style.animationDuration = '1s';
+            } else if (animationMode === 'chaos') {
+                core.style.animationDuration = '0.5s';
+                core.style.animationTimingFunction = 'steps(5)';
+            } else {
+                core.style.animationDuration = '2s';
+                core.style.animationTimingFunction = 'ease-in-out';
+            }
+        }
+
+        function setupParticles() {
+            if (particleInterval) clearInterval(particleInterval);
+            
+            let interval = 200;
+            if (particleMode === 'intense') interval = 100;
+            else if (particleMode === 'minimal') interval = 500;
+            else if (particleMode === 'none') return;
+            
+            particleInterval = setInterval(() => {
+                if (isPowered) {
+                    createParticle();
+                    if (Math.random() > 0.7) createBolt();
+                }
+            }, interval);
+        }
+
+        function saveConfig() {
+            const config = {
+                color: currentColor,
+                secondaryColor: secondaryColor,
+                speed: rotationSpeed,
+                glow: glowIntensity,
+                size: reactorSize,
+                particles: particleMode,
+                animation: animationMode
+            };
+            const configData = {config};
+            const blob = new Blob([JSON.stringify(configData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'reactor-config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            info.textContent = '💾 CONFIGURACIÓN GUARDADA';
+            setTimeout(() => {
+                if (isPowered) info.textContent = 'REACTOR ARC - ACTIVO';
+            }, 2000);
+        }
+
+        function loadConfig() {
+            const config = {config: {
+                color: '#00d9ff',
+                secondaryColor: '#0066ff',
+                speed: 1,
+                glow: 1,
+                size: 1,
+                particles: 'normal',
+                animation: 'smooth'
+            }};
+            
+            currentColor = config.config.color;
+            secondaryColor = config.config.secondaryColor;
+            rotationSpeed = config.config.speed;
+            glowIntensity = config.config.glow;
+            reactorSize = config.config.size;
+            particleMode = config.config.particles;
+            animationMode = config.config.animation;
+            
+            colorPicker.value = currentColor;
+            speedSlider.value = rotationSpeed;
+            glowSlider.value = glowIntensity * 100;
+            sizeSlider.value = reactorSize * 100;
+            particleEffect.value = particleMode;
+            animationModeSelect.value = animationMode;
+            
+            document.getElementById('speedValue').textContent = rotationSpeed.toFixed(1) + 'x';
+            document.getElementById('glowValue').textContent = (glowIntensity * 100) + '%';
+            document.getElementById('sizeValue').textContent = (reactorSize * 100) + '%';
+            
+            updateReactorColors();
+            updateRotationSpeed();
+            updateGlowIntensity();
+            reactor.style.transform = `scale(${reactorSize})`;
+            updateAnimationMode();
+        }
+
+        function resetConfig() {
+            colorPicker.value = '#00d9ff';
+            speedSlider.value = 1;
+            glowSlider.value = 100;
+            sizeSlider.value = 100;
+            particleEffect.value = 'normal';
+            animationModeSelect.value = 'smooth';
+            
+            currentColor = '#00d9ff';
+            secondaryColor = '#0066ff';
+            rotationSpeed = 1;
+            glowIntensity = 1;
+            reactorSize = 1;
+            particleMode = 'normal';
+            animationMode = 'smooth';
+            
+            document.getElementById('speedValue').textContent = '1x';
+            document.getElementById('glowValue').textContent = '100%';
+            document.getElementById('sizeValue').textContent = '100%';
+            
+            updateReactorColors();
+            updateRotationSpeed();
+            updateGlowIntensity();
+            reactor.style.transform = 'scale(1)';
+            updateAnimationMode();
+            setupParticles();
+            
+            document.querySelectorAll('.preset-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === 0);
+            });
+            
+            info.textContent = '🔄 CONFIGURACIÓN RESETEADA';
+            setTimeout(() => {
+                if (isPowered) info.textContent = 'REACTOR ARC - ACTIVO';
+            }, 2000);
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            if (isPowered && !isBoosting) {
+                energy = Math.max(60, energy - 0.1);
+                temperature = Math.min(100, 25 + (100 - energy) * 0.3);
+                output = 3 + (100 - energy) * 0.02;
+            } else if (!isPowered) {
+                energy = Math.min(100, energy + 0.2);
+                temperature = Math.max(25, temperature - 0.3);
+                output = 0;
+            }
+
+            energyEl.textContent = Math.round(energy) + '%';
+            energyBar.style.width = energy + '%';
+            tempEl.textContent = Math.round(temperature) + '°C';
+            tempBar.style.width = (temperature / 100 * 100) + '%';
+            outputEl.textContent = output.toFixed(1) + ' GJ/s';
+            
+            if (!isPowered) {
+                statusEl.textContent = 'APAGADO';
+                statusEl.style.color = '#666';
+            } else if (temperature > 80) {
+                statusEl.textContent = 'CRÍTICO';
+                statusEl.style.color = '#ff0000';
+            } else if (temperature > 60) {
+                statusEl.textContent = 'ALERTA';
+                statusEl.style.color = '#ffaa00';
+            } else {
+                statusEl.textContent = 'ÓPTIMO';
+                statusEl.style.color = currentColor;
+            }
+        }
+
+        setInterval(updateStats, 100);
+
+        // Crear rayo de energía
+        function createBolt() {
+            const bolt = document.createElement('div');
+            bolt.className = 'energy-bolt';
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 60;
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance;
+            bolt.style.left = `calc(50% + ${x}px)`;
+            bolt.style.top = `calc(50% + ${y}px)`;
+            bolt.style.transform = `rotate(${angle}rad)`;
+            reactor.appendChild(bolt);
+            
+            setTimeout(() => bolt.remove(), 500);
+        }
+
+        // Crear partículas flotantes
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.random() * 80 + 40;
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance;
+            particle.style.left = `calc(50% + ${x}px)`;
+            particle.style.top = `calc(50% + ${y}px)`;
+            particle.style.animationDelay = `${Math.random() * 2}s`;
+            reactor.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 3000);
+        }
+
+        setupParticles();
+
+        function togglePower() {
+            isPowered = !isPowered;
+            reactor.classList.toggle('power-off');
+            info.textContent = isPowered ? 'REACTOR ARC - ACTIVO' : 'REACTOR ARC - INACTIVO';
+        }
+
+        function boost() {
+            if (!isPowered || isBoosting) return;
+            
+            isBoosting = true;
+            info.textContent = 'SOBRECARGA ACTIVADA';
+            reactor.style.filter = `brightness(${glowIntensity * 2}) saturate(1.5)`;
+            
+            temperature += 30;
+            output = 15;
+            energy = Math.max(40, energy - 20);
+            
+            // Crear muchas partículas y rayos durante la sobrecarga
+            const boostInterval = setInterval(() => {
+                for (let i = 0; i < 5; i++) {
+                    createParticle();
+                    createBolt();
+                }
+            }, 50);
+            
+            setTimeout(() => {
+                clearInterval(boostInterval);
+                reactor.style.filter = `brightness(${glowIntensity})`;
+                info.textContent = 'REACTOR ARC - ACTIVO';
+                isBoosting = false;
+            }, 2000);
+        }
+
+        // Efecto de resplandor al mover el mouse
+        document.addEventListener('mousemove', (e) => {
+            if (!isPowered) return;
+            const rect = reactor.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            const distance = Math.sqrt(x * x + y * y);
+            
+            if (distance < 200) {
+                const intensity = glowIntensity + (1 - distance / 200) * 0.5;
+                reactor.style.filter = `brightness(${intensity})`;
+            } else {
+                reactor.style.filter = `brightness(${glowIntensity})`;
+            }
+        });
+    </script>
+
+</body>
+</html>
